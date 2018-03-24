@@ -1,7 +1,6 @@
 # Dependencies
 import tweepy
 import json
-import numpy as np
 
 # Import and Initialize Sentiment Analyzer
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
