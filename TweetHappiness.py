@@ -1,52 +1,84 @@
 # Dependencies
 import tweepy
-import time
 import json
-import random
-import os
-
-# Twitter API Keys
-consumer_key = os.environ['consumer_key']
-consumer_secret = os.environ ['consumer_secret']
-access_token= os.environ['access_token']
-access_secret= os.environ['access_secret']
-
-#     # Twitter credentials
-# Setup Tweepy API Authentication
-auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_secret)
-api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
+import numpy as np
 
 # Import and Initialize Sentiment Analyzer
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 analyzer = SentimentIntensityAnalyzer()
 
-# Quotes to Tweet
-happy_quotes = [
-    "For every minute you are angry you lose sixty seconds of happiness. - Ralph Waldo Emerson",
-    "Folks are usually about as happy as they make their minds up to be. - Abraham Lincoln",
-    "Happiness is when what you think, what you say, and what you do are in harmony. - Mahatma Gandhi",
-    "Count your age by friends, not years. Count your life by smiles, not tears. - John Lennon",
-    "Happiness is a warm puppy. - Charles M. Schulz",
-    "The happiness of your life depends upon the quality of your thoughts. - Marcus Aurelius",
-    "Now and then it's good to pause in our pursuit of happiness and just be happy. - Guillaume Apollinaire"]
+# Twitter API Keys
+from config import consumer_key
+from config import consumer_secret
+from config import access_token
+from config import access_secret
 
+# Setup Tweepy API Authentication
+auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_secret)
+api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
 
+# Target Search Term
+target_terms = ("@united")
 
-for quote in happy_quotes:
-	api.update_status(quote)
-    print("{0} \n".format(quote))
-    time.sleep(5)
+# "Real Person" Filters
+min_tweets = 5
+max_tweets = 10000
+max_followers = 2500
+max_following = 2500
+lang = "en"
 
-	
+# Array to hold sentiment
+sentiment_array = []
 
-#     # Tweet a random quote
-api.update_status(happy_quotes)
+# Variable for holding the oldest tweet
+oldest_tweet = ""
 
-#     # Print success message
-#     # YOUR CODE HERE
-#     raise NotImplementedError()
+# Loop through all target users
+for target in target_terms:
 
-# # Set timer to run every minute
-# # YOUR CODE HERE
-# raise NotImplementedError()
+    # Variables for holding sentiments
+    compound_list = []
+    positive_list = []
+    negative_list = []
+    neutral_list = []
+
+    # Loop through 10 times (total of 1500 tweets)
+    for x in range(10):
+
+        # Run search around each tweet
+        public_tweets = api.search(target, count=100, result_type="recent")
+
+        # Loop through all tweets
+        for tweet in public_tweets["statuses"]:
+
+            # Use filters to check if user meets conditions
+            if (tweet["user"]["followers_count"] < max_followers and
+                tweet["user"]["statuses_count"] > min_tweets and
+                tweet["user"]["statuses_count"] < max_tweets and
+                tweet["user"]["friends_count"] < max_following and
+                    tweet["user"]["lang"] == lang):
+
+                # Run Vader Analysis on each tweet
+                compound = analyzer.polarity_scores(tweet["text"])["compound"]
+                pos = analyzer.polarity_scores(tweet["text"])["pos"]
+                neu = analyzer.polarity_scores(tweet["text"])["neu"]
+                neg = analyzer.polarity_scores(tweet["text"])["neg"]
+
+                # Add each value to the appropriate array
+                compound_list.append(compound)
+                positive_list.append(pos)
+                negative_list.append(neg)
+                neutral_list.append(neu)
+
+    # Store the Average Sentiments
+    sentiment = {"User": target,
+                 "Compound": np.mean(compound_list),
+                 "Positive": np.mean(positive_list),
+                 "Neutral": np.mean(negative_list),
+                 "Negative": np.mean(neutral_list),
+                 "Tweet Count": len(compound_list)}
+
+    # Print the Sentiments
+    print(sentiment)
+    print("")
