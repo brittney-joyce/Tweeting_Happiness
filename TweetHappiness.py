@@ -11,6 +11,12 @@ consumer_secret = os.environ ['consumer_secret']
 access_token= os.environ['access_token']
 access_secret= os.environ['access_secret']
 
+#     # Twitter credentials
+# Setup Tweepy API Authentication
+auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_secret)
+api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
+
 # Import and Initialize Sentiment Analyzer
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 analyzer = SentimentIntensityAnalyzer()
@@ -33,11 +39,6 @@ for quote in happy_quotes:
     time.sleep(5)
 
 	
-#     # Twitter credentials
-# Setup Tweepy API Authentication
-auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-auth.set_access_token(access_token, access_secret)
-api = tweepy.API(auth, parser=tweepy.parsers.JSONParser())
 
 #     # Tweet a random quote
 api.update_status(happy_quotes)
