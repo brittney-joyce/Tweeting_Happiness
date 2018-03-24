@@ -9,7 +9,7 @@ import os
 consumer_key= os.environ['consumer_key']
 consumer_secret= os.environ['consumer_secret']
 access_token= os.environ['access_token']
-access_tokensecretTwitter= os.environ['access_secret']
+access_secret= os.environ['access_secret']
 
 # Quotes to Tweet
 happy_quotes = [
